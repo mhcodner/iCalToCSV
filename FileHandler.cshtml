@@ -1,0 +1,22 @@
+﻿@{
+    string WebRootPath = Server.MapPath("~");
+    string filename = Request.QueryString["File"];
+    string contenttype = "text/csv";
+    FileStream fs = new FileStream(WebRootPath + filename,
+        FileMode.Open, FileAccess.Read);
+    BinaryReader br = new BinaryReader(fs);
+    Byte[] bytes = br.ReadBytes((Int32)fs.Length);
+    br.Close();
+    fs.Close();
+
+    //Write the file to response Stream
+    Response.Buffer = true;
+    Response.Charset = "";
+    Response.Cache.SetCacheability(HttpCacheability.NoCache);
+    Response.ContentType = contenttype;
+    Response.AddHeader("content-disposition", "attachment;filename=" + filename);
+    Response.BinaryWrite(bytes);
+    Response.Flush();
+    File.Delete(Server.MapPath(String.Format("~/{0}", filename)));
+    Response.End();
+}

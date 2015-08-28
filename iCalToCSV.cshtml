@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "~/_SiteLayout.cshtml";
+}
+<p>
+    <a href="#" id="download-all">Download</a> csv file for all events
+</p>
+<p>
+    <a href="#" id="download-new">Download</a> csv file only for new events since last download. <a href="#" id="reset">Reset</a>
+</p>
+<script src="~/Scripts/jquery.signalR-2.1.2.min.js"></script>
+<script src="~/signalr/hubs"></script>
+<script>
+    var downloadURL = function downloadURL(url) {
+        var hiddenIFrameID = 'hiddenDownloader',
+            iframe = document.getElementById(hiddenIFrameID);
+        if (iframe === null) {
+            iframe = document.createElement('iframe');
+            iframe.id = hiddenIFrameID;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
+        iframe.src = url;
+    };
+    $(function () {
+        var CSVHub = $.connection.cSVHub;
+
+        CSVHub.client.Download = function (file) {
+            downloadURL('@Href("~/FileHandler?File=")' + file);
+        };
+
+        CSVHub.client.NoNewEvents = function () {
+            alert("There are no new events since the last download.");
+        };
+
+        $.connection.hub.start().done(function () {
+            $("#download-all").click(function (e) {
+                e.preventDefault();
+                CSVHub.server.getAllEvents();
+            });
+            $("#download-new").click(function (e) {
+                e.preventDefault();
+                CSVHub.server.getNewEvents();
+            });
+            $("#reset").click(function (e) {
+                e.preventDefault();
+                CSVHub.server.reset();
+            });
+        });
+    });
+</script>
